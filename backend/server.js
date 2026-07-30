@@ -35,23 +35,52 @@ app.post("/analyze", async (req, res) => {
           content: [
             {
               type: "input_text",
-              text:
-                "Identify the food in this image. Return ONLY valid JSON with: food, calories, protein, carbs, fat.",
+              text: `
+Analyze the food in this image.
+
+Return ONLY valid JSON in this exact format:
+
+{
+  "food": "",
+  "calories": 0,
+  "protein": 0,
+  "carbs": 0,
+  "fat": 0
+}
+
+Do not include markdown.
+Do not include \`\`\`.
+Do not write explanations.
+`,
             },
             {
               type: "input_image",
-              image_url: image,
+              image_url: `data:image/jpeg;base64,${image}`,
             },
           ],
         },
       ],
     });
 
-    res.json({
-      result: response.output_text,
-    });
+    let result = response.output_text.trim();
+
+    result = result.replace(/^```json\s*/i, "");
+    result = result.replace(/^```\s*/i, "");
+    result = result.replace(/\s*```$/i, "");
+
+    try {
+      result = JSON.parse(result);
+    } catch (e) {
+      return res.status(500).json({
+        error: "AI returned invalid JSON",
+        raw: response.output_text,
+      });
+    }
+
+    res.json(result);
   } catch (err) {
     console.error(err);
+
     res.status(500).json({
       error: err.message,
     });

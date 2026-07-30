@@ -1,42 +1,57 @@
-import { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import api from "../services/api";
+import React from "react";
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  StatusBar,
+} from "react-native";
+
+import Colors from "../theme/colors";
+
+import Header from "../components/dashboard/Header";
+import DashboardCard from "../components/dashboard/DashboardCard";
+
+import useDashboard from "../hooks/useDashboard";
 
 export default function HomeScreen() {
-  const [status, setStatus] = useState("Connecting...");
-
-  useEffect(() => {
-    api
-      .get("/")
-      .then((res) => setStatus(res.data.status))
-      .catch((err) => setStatus(err.message));
-  }, []);
+  const {
+    calories,
+    protein,
+    carbs,
+    fat,
+  } = useDashboard();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>NutriLens AI</Text>
-      <Text style={styles.status}>{status}</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={Colors.background}
+      />
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
+        <Header />
+
+        <DashboardCard
+          calories={calories}
+          protein={protein}
+          carbs={carbs}
+          fat={fat}
+        />
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0B0B0B",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: Colors.background,
   },
-  title: {
-    color: "white",
-    fontSize: 34,
-    fontWeight: "bold",
-  },
-  status: {
-    marginTop: 20,
-    color: "#22C55E",
-    fontSize: 18,
-    textAlign: "center",
-    paddingHorizontal: 20,
+
+  content: {
+    paddingBottom: 40,
   },
 });
